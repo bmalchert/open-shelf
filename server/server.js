@@ -1,3 +1,4 @@
+// server/server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -27,9 +28,17 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
+// Import routes
+const { router: authRouter } = require('./routes/auth');
+const usersRouter = require('./routes/users');
+
+// Use routes
+app.use('/api/auth', authRouter);
+app.use('/api/users', usersRouter);
+
 // Basic route
 app.get('/', (req, res) => {
-  res.send('Hobby Library API is running');
+  res.send('Open Shelf Library API is running');
 });
 
 // Socket.io connection
@@ -41,6 +50,12 @@ io.on('connection', (socket) => {
   });
   
   // We'll add messaging events here later
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
 });
 
 // Start server
