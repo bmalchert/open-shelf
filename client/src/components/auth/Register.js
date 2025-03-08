@@ -27,7 +27,7 @@ const Register = () => {
       setFormError(error);
       clearError();
     }
-  }, [isAuthenticated, error]);
+  }, [isAuthenticated, error, clearError, navigate]);
   
   const { name, email, password, password2, location } = formData;
   

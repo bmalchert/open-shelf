@@ -24,7 +24,7 @@ const Login = () => {
       setFormError(error);
       clearError();
     }
-  }, [isAuthenticated, error]);
+  }, [isAuthenticated, error, clearError, navigate]);
   
   const { email, password } = formData;
   

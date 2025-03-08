@@ -1,5 +1,5 @@
 // client/src/context/AuthContext.js
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 export const AuthContext = createContext();
@@ -29,10 +29,10 @@ export const AuthProvider = ({ children }) => {
     } else {
       delete api.defaults.headers.common['x-auth-token'];
     }
-  }, [token]);
+  }, [token, api.defaults.headers.common]);
 
   // Load user from token
-  const loadUser = async () => {
+  const loadUser = useCallback(async () => {
     setLoading(true);
     
     if (token) {
@@ -51,12 +51,12 @@ export const AuthProvider = ({ children }) => {
     }
     
     setLoading(false);
-  };
+  }, [token, api]);
 
   // Load user on initial app load and when token changes
   useEffect(() => {
     loadUser();
-  }, [token]);
+  }, [token, loadUser]);
 
   // Register user
   const register = async (userData) => {

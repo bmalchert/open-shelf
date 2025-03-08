@@ -44,7 +44,7 @@ const Profile = () => {
       setProfileFeedback({ message: error, isError: true });
       clearError();
     }
-  }, [user, error]);
+  }, [user, error, clearError]);
   
   // Handle profile form changes
   const handleProfileChange = (e) => {
