@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   // Set up axios defaults
-  const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
   
   // Create an axios instance with base URL
   const api = axios.create({

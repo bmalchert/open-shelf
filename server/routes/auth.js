@@ -33,11 +33,22 @@ router.post('/register', async (req, res) => {
   const { name, email, password, location } = req.body;
   
   try {
+    console.log('Registration attempt with email:', email);
+    
     // Check if user already exists
     let user = await User.findOne({ email });
     if (user) {
+      console.log('User already exists with this email');
       return res.status(400).json({ msg: 'User already exists' });
     }
+    
+    // Log the data we're about to save
+    console.log('Creating new user with data:', {
+      name,
+      email,
+      location,
+      passwordLength: password ? password.length : 0
+    });
     
     // Create new user
     user = new User({
@@ -47,8 +58,10 @@ router.post('/register', async (req, res) => {
       location
     });
     
-    // Save user to database (password is hashed in the model's pre-save hook)
+    // Save user to database
+    console.log('Attempting to save user to database...');
     await user.save();
+    console.log('User saved successfully with ID:', user.id);
     
     // Create JWT payload
     const payload = {
@@ -58,18 +71,28 @@ router.post('/register', async (req, res) => {
     };
     
     // Sign token
+    console.log('Signing JWT token...');
     jwt.sign(
       payload,
       process.env.JWT_SECRET,
       { expiresIn: '5d' },
       (err, token) => {
-        if (err) throw err;
+        if (err) {
+          console.error('JWT signing error:', err);
+          throw err;
+        }
+        console.log('JWT token created successfully');
         res.json({ token });
       }
     );
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Registration error details:', {
+      message: err.message,
+      stack: err.stack,
+      code: err.code,
+      name: err.name
+    });
+    res.status(500).json({ msg: 'Server error during registration' });
   }
 });
 
