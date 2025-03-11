@@ -6,9 +6,14 @@ import AuthContext from '../../context/AuthContext';
 const PrivateRoute = () => {
   const { isAuthenticated, loading } = useContext(AuthContext);
 
-  // Show loading state while checking authentication
+  // Improved loading state with a more user-friendly message
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="private-route-loading">
+        <h2>Loading your account...</h2>
+        <p>Please wait while we verify your credentials.</p>
+      </div>
+    );
   }
   
   // If not authenticated, redirect to login

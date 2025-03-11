@@ -33,31 +33,36 @@ export const AuthProvider = ({ children }) => {
 
   // Load user from token
   const loadUser = useCallback(async () => {
+    if (!token) {
+      setLoading(false);
+      setIsAuthenticated(false);
+      setUser(null);
+      return;
+    }
+
     setLoading(true);
     
-    if (token) {
-      try {
-        const res = await api.get('/api/auth/me');
-        setUser(res.data);
-        setIsAuthenticated(true);
-      } catch (err) {
-        console.error('Load user error:', err);
-        localStorage.removeItem('token');
-        setToken(null);
-        setUser(null);
-        setIsAuthenticated(false);
-        setError('Session expired. Please log in again.');
-      }
+    try {
+      const res = await api.get('/api/auth/me');
+      setUser(res.data);
+      setIsAuthenticated(true);
+    } catch (err) {
+      console.error('Load user error:', err);
+      localStorage.removeItem('token');
+      setToken(null);
+      setUser(null);
+      setIsAuthenticated(false);
+      setError('Session expired. Please log in again.');
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   }, [token, api]);
 
-  // Load user on initial app load and when token changes
+  // Load user on initial app load only - not when token changes
   useEffect(() => {
     loadUser();
-  }, [token, loadUser]);
-
+  }, []);  // Removed token dependency to prevent loops
+  
   // Register user
   const register = async (userData) => {
     setLoading(true);
@@ -67,7 +72,12 @@ export const AuthProvider = ({ children }) => {
       const res = await api.post('/api/auth/register', userData);
       localStorage.setItem('token', res.data.token);
       setToken(res.data.token);
-      await loadUser();
+      
+      // After setting token, load user data
+      const userRes = await api.get('/api/auth/me');
+      setUser(userRes.data);
+      setIsAuthenticated(true);
+      
       return true;
     } catch (err) {
       console.error('Register error:', err);
@@ -90,7 +100,12 @@ export const AuthProvider = ({ children }) => {
       const res = await api.post('/api/auth/login', { email, password });
       localStorage.setItem('token', res.data.token);
       setToken(res.data.token);
-      await loadUser();
+      
+      // After setting token, load user data
+      const userRes = await api.get('/api/auth/me');
+      setUser(userRes.data);
+      setIsAuthenticated(true);
+      
       return true;
     } catch (err) {
       console.error('Login error:', err);
