@@ -7,7 +7,7 @@ const EditBook = () => {
   const { id } = useParams();
   const { api } = useContext(AuthContext);
   const navigate = useNavigate();
-  
+
   const [formData, setFormData] = useState({
     title: '',
     authors: '',
@@ -22,12 +22,12 @@ const EditBook = () => {
     status: 'Available',
     notes: ''
   });
-  
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  
+
   // Destructure form data
   const {
     title,
@@ -43,106 +43,66 @@ const EditBook = () => {
     status,
     notes
   } = formData;
-  
+
   // Load book data
+  // Loading book data in EditBook.js
   useEffect(() => {
     const loadBook = async () => {
       try {
-        // For now, we'll use mock data until the backend is implemented
-        // This is where you'd make the actual API call: const res = await api.get(`/api/books/${id}`);
-        
-        // Mock data based on the ID
-        setTimeout(() => {
-          // Mock different books based on ID
-          const mockBooks = {
-            '1': {
-              title: 'To Kill a Mockingbird',
-              authors: ['Harper Lee'],
-              isbn: '9780061120084',
-              publisher: 'HarperCollins',
-              publishedDate: '1960',
-              description: 'The story of Scout Finch, her brother Jem, and their father Atticus, during the Great Depression.',
-              pageCount: 324,
-              categories: ['Fiction', 'Classics', 'Historical Fiction'],
-              condition: 'Good',
-              status: 'Available',
-              notes: 'Bought at the used bookstore downtown',
-              imageLinks: {
-                thumbnail: 'https://via.placeholder.com/150'
-              }
-            },
-            '2': {
-              title: '1984',
-              authors: ['George Orwell'],
-              isbn: '9780451524935',
-              publisher: 'Signet Classics',
-              publishedDate: '1949',
-              description: 'A dystopian novel about the dangers of totalitarianism.',
-              pageCount: 328,
-              categories: ['Fiction', 'Classics', 'Dystopian'],
-              condition: 'Very Good',
-              status: 'Available',
-              notes: 'College reading assignment',
-              imageLinks: {
-                thumbnail: 'https://via.placeholder.com/150'
-              }
-            }
-          };
-          
-          const foundBook = mockBooks[id];
-          
-          if (foundBook) {
-            setFormData({
-              title: foundBook.title,
-              authors: foundBook.authors.join(', '),
-              isbn: foundBook.isbn || '',
-              publisher: foundBook.publisher || '',
-              publishedDate: foundBook.publishedDate || '',
-              description: foundBook.description || '',
-              pageCount: foundBook.pageCount || '',
-              categories: foundBook.categories ? foundBook.categories.join(', ') : '',
-              thumbnail: foundBook.imageLinks?.thumbnail || '',
-              condition: foundBook.condition,
-              status: foundBook.status,
-              notes: foundBook.notes || ''
-            });
-          } else {
-            setError('Book not found');
-          }
-          
-          setLoading(false);
-        }, 1000);
+        setLoading(true);
+        const res = await api.get(`/api/books/${id}`);
+
+        // Extract data from response
+        const bookData = res.data;
+
+        // Update form state with real data
+        setFormData({
+          title: bookData.title,
+          authors: bookData.authors.join(', '),
+          isbn: bookData.isbn || '',
+          publisher: bookData.publisher || '',
+          publishedDate: bookData.publishedDate || '',
+          description: bookData.description || '',
+          pageCount: bookData.pageCount || '',
+          categories: bookData.categories ? bookData.categories.join(', ') : '',
+          thumbnail: bookData.imageLinks?.thumbnail || '',
+          condition: bookData.condition,
+          status: bookData.status,
+          notes: bookData.notes || ''
+        });
+
+        setLoading(false);
       } catch (err) {
         console.error('Error loading book:', err);
         setError('Failed to load book data. Please try again.');
         setLoading(false);
       }
     };
-    
+
     loadBook();
   }, [id, api]);
-  
+
   const onChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-  
+
   const onSubmit = async e => {
     e.preventDefault();
-    
+
     // Validate required fields
     if (!title) {
       setError('Title is required');
       return;
     }
-    
+
     if (!authors) {
       setError('At least one author is required');
       return;
     }
-    
+
     setSubmitting(true);
     setError('');
-    
+
     // Prepare book data
     const bookData = {
       title,
@@ -160,34 +120,32 @@ const EditBook = () => {
       status,
       notes: notes || undefined
     };
-    
+
     try {
-      // This is where you'd make the actual API call: await api.put(`/api/books/${id}`, bookData);
-      
-      // Simulate API call
+      // Make the real API call to update the book
+      await api.put(`/api/books/${id}`, bookData);
+
+      setMessage('Book updated successfully!');
+      setSubmitting(false);
+
+      // Redirect to book details after short delay
       setTimeout(() => {
-        setMessage('Book updated successfully!');
-        setSubmitting(false);
-        
-        // Redirect to book details after short delay
-        setTimeout(() => {
-          navigate(`/books/${id}`);
-        }, 1500);
-      }, 1000);
+        navigate(`/books/${id}`);
+      }, 1500);
     } catch (err) {
       console.error('Update book error:', err);
       setError(
-        err.response?.data?.msg || 
+        err.response?.data?.msg ||
         'Failed to update book. Please try again.'
       );
       setSubmitting(false);
     }
   };
-  
+
   if (loading) {
     return <div className="edit-book-loading">Loading book data...</div>;
   }
-  
+
   return (
     <div className="edit-book-container">
       <div className="edit-book-header">
@@ -196,10 +154,10 @@ const EditBook = () => {
           Cancel
         </Link>
       </div>
-      
+
       {message && <div className="alert alert-success">{message}</div>}
       {error && <div className="alert alert-danger">{error}</div>}
-      
+
       <form onSubmit={onSubmit} className="book-form">
         <div className="form-group">
           <label htmlFor="title">Title *</label>
@@ -212,7 +170,7 @@ const EditBook = () => {
             required
           />
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="authors">Author(s) *</label>
           <input
@@ -225,7 +183,7 @@ const EditBook = () => {
             required
           />
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="isbn">ISBN</label>
           <input
@@ -236,7 +194,7 @@ const EditBook = () => {
             onChange={onChange}
           />
         </div>
-        
+
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="publisher">Publisher</label>
@@ -248,7 +206,7 @@ const EditBook = () => {
               onChange={onChange}
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="publishedDate">Publication Year</label>
             <input
@@ -261,7 +219,7 @@ const EditBook = () => {
             />
           </div>
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="description">Description</label>
           <textarea
@@ -272,7 +230,7 @@ const EditBook = () => {
             rows="4"
           ></textarea>
         </div>
-        
+
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="pageCount">Page Count</label>
@@ -285,7 +243,7 @@ const EditBook = () => {
               min="1"
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="categories">Categories</label>
             <input
@@ -298,7 +256,7 @@ const EditBook = () => {
             />
           </div>
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="thumbnail">Cover Image URL</label>
           <input
@@ -310,7 +268,7 @@ const EditBook = () => {
             placeholder="https://example.com/cover.jpg"
           />
         </div>
-        
+
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="condition">Condition *</label>
@@ -328,7 +286,7 @@ const EditBook = () => {
               <option value="Poor">Poor</option>
             </select>
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="status">Status *</label>
             <select
@@ -344,7 +302,7 @@ const EditBook = () => {
             </select>
           </div>
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="notes">Personal Notes</label>
           <textarea
@@ -356,9 +314,9 @@ const EditBook = () => {
             placeholder="Add any personal notes about this book (not visible to other users)"
           ></textarea>
         </div>
-        
-        <button 
-          type="submit" 
+
+        <button
+          type="submit"
           className="btn btn-primary"
           disabled={submitting}
         >
