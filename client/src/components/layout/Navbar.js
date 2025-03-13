@@ -11,8 +11,12 @@ const Navbar = () => {
       <li>
         <Link to="/dashboard">Dashboard</Link>
       </li>
-      <li>
-        <Link to="/books">Books</Link>
+      <li className="dropdown">
+        <span className="dropdown-trigger">Books <i className="fas fa-caret-down"></i></span>
+        <div className="dropdown-menu">
+          <Link to="/books">My Library</Link>
+          <Link to="/books/add">Add Book</Link>
+        </div>
       </li>
       <li>
         <Link to="/messages">Messages</Link>

@@ -50,6 +50,9 @@ const Dashboard = () => {
               <div className="book-list">
                 {/* Book list items would go here */}
                 <p>You have {books.length} books in your library</p>
+                <Link to="/books" className="btn btn-primary">
+                  View My Library
+                </Link>
               </div>
             ) : (
               <div className="no-items">
@@ -72,7 +75,7 @@ const Dashboard = () => {
             ) : (
               <div className="no-items">
                 <p>You don't have any active loans.</p>
-                <Link to="/browse" className="btn btn-primary">
+                <Link to="/books" className="btn btn-primary">
                   Browse Books
                 </Link>
               </div>
@@ -86,8 +89,8 @@ const Dashboard = () => {
               <Link to="/books/add" className="btn">
                 <i className="fas fa-plus"></i> Add Book
               </Link>
-              <Link to="/browse" className="btn">
-                <i className="fas fa-search"></i> Browse Books
+              <Link to="/books" className="btn">
+                <i className="fas fa-book"></i> My Library
               </Link>
               <Link to="/profile" className="btn">
                 <i className="fas fa-user"></i> Edit Profile
