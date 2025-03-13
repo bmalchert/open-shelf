@@ -31,10 +31,16 @@ mongoose.connect(process.env.MONGODB_URI)
 // Import routes
 const { router: authRouter } = require('./routes/auth');
 const usersRouter = require('./routes/users');
+const booksRouter = require('./routes/books');
+const loansRouter = require('./routes/loans');
+const messagesRouter = require('./routes/messages');
 
 // Use routes
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/books', booksRouter);
+app.use('/api/loans', loansRouter);
+app.use('/api/messages', messagesRouter);
 
 // Basic route
 app.get('/', (req, res) => {
@@ -49,7 +55,49 @@ io.on('connection', (socket) => {
     console.log('User disconnected:', socket.id);
   });
   
-  // We'll add messaging events here later
+  // Set up real-time messaging
+  socket.on('join', (userId) => {
+    socket.join(userId);
+    console.log(`User ${userId} joined their room`);
+  });
+  
+  socket.on('sendMessage', async (messageData) => {
+    try {
+      const { sender, recipient, content, relatedBook, relatedLoan } = messageData;
+      
+      // Create and save the message
+      const Message = mongoose.model('Message');
+      const newMessage = new Message({
+        sender,
+        recipient,
+        content,
+        relatedBook,
+        relatedLoan
+      });
+      
+      const savedMessage = await newMessage.save();
+      
+      // Populate the message with sender and recipient info
+      const populatedMessage = await Message.findById(savedMessage._id)
+        .populate('sender', 'name avatar')
+        .populate('recipient', 'name avatar')
+        .populate('relatedBook', 'title')
+        .populate('relatedLoan');
+      
+      // Emit the message to both sender and recipient rooms
+      io.to(recipient).emit('newMessage', populatedMessage);
+      io.to(sender).emit('messageSent', populatedMessage);
+      
+    } catch (error) {
+      console.error('Socket message error:', error.message);
+    }
+  });
+  
+  // Handle loan notifications
+  socket.on('loanUpdate', ({ loanId, status, userId }) => {
+    // Emit loan update to the user
+    io.to(userId).emit('loanStatusChanged', { loanId, status });
+  });
 });
 
 // Error handling middleware
